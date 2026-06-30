@@ -3,6 +3,7 @@
 require_once 'RetryLimit.php';
 require_once 'Loan.php';
 require_once 'Database.php';
+require_once 'LoanManagementRepository.php';
 
 class Customer //implements JsonSerializable
 {
@@ -351,7 +352,7 @@ class Customer //implements JsonSerializable
 
     public function insertCustomer(): void{
 
-        $this->customer_id = Database::insertCustomer(
+        $this->customer_id = LoanManagementRepository::insertCustomer(
             $this->account_number,
             $this->customer_name,
             $this->customer_dob,
@@ -366,8 +367,7 @@ class Customer //implements JsonSerializable
      */
     public function insertLoan(Loan $_loan): void{
 
-        $database = new Database();
-        $database->insertLoan(
+        LoanManagementRepository::insertLoan(
             $this->customer_id,
             $_loan->getLoanType(),
             $_loan->getLoanAmount(),
@@ -384,7 +384,7 @@ class Customer //implements JsonSerializable
      */
     public function loadAll(): array
     {
-        $rows = (new Database())->loadAllCustomers();
+        $rows = LoanManagementRepository::getAllCustomers();
         $customers = [];
 
         foreach ($rows as $row) {

@@ -36,7 +36,8 @@ class LoanApplication
         $attempts = 0;
 
         while (true) {
-            $choice = (int) trim(readline("Enter your choice: "));
+            echo "Enter your choice: ";
+            $choice = (int) trim(fgets(STDIN));
 
             if ($choice === 1) {
                 return false;
@@ -64,7 +65,8 @@ class LoanApplication
         $attempts = 0;
 
         while (true) {
-            $account_number = trim(readline("Enter your Acc Number: "));
+            echo "Enter your Acc Number: ";
+            $account_number = trim(fgets(STDIN));
 
             if (isset($this->customer_master_list_data[$account_number])) {
                 $customer = $this->customer_master_list_data[$account_number];
@@ -109,7 +111,8 @@ class LoanApplication
         $attempts = 0;
 
         while (true) {
-            $choice = (int) trim(readline("Enter the number corresponding to your loan type: "));
+            echo "Enter the number corresponding to your loan type: ";
+            $choice = (int) trim(fgets(STDIN));
 
             try {
                 $loan_type = LoanType::create($choice);
@@ -144,7 +147,8 @@ class LoanApplication
         $attempts = 0;
 
         while (true) {
-            $amount = (float) trim(readline("Enter the loan amount: "));
+            echo "Enter the loan amount: ";
+            $amount = (float) trim(fgets(STDIN));
 
             if ($_customer->isValidLoanAmount($amount)) {
                 return $amount;
@@ -167,7 +171,8 @@ class LoanApplication
         $attempts = 0;
 
         while (true) {
-            $months = (int) trim(readline("Enter the loan tenure in months: "));
+            echo "Enter the loan tenure in months: ";
+            $months = (int) trim(fgets(STDIN));
 
             if ($_customer->isValidMonths($months)) {
                 return $months;
