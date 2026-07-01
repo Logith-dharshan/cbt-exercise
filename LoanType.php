@@ -19,7 +19,7 @@ abstract class LoanType
 
 class PersonalLoan extends LoanType
 {
-    const RATE = 0.12;
+    private const RATE = 0.12;
 
     public function rate(): float
     {
@@ -34,7 +34,7 @@ class PersonalLoan extends LoanType
 
 class HomeLoan extends LoanType
 {
-    const RATE = 0.08;
+    private const RATE = 0.08;
 
     public function rate(): float
     {
@@ -49,7 +49,7 @@ class HomeLoan extends LoanType
 
 class CarLoan extends LoanType
 {
-    const RATE = 0.09;
+    private const RATE = 0.09;
 
     public function rate(): float
     {
@@ -64,7 +64,7 @@ class CarLoan extends LoanType
 
 class EducationLoan extends LoanType
 {
-    const RATE = 0.095;
+    private const RATE = 0.095;
 
     public function rate(): float
     {

@@ -86,9 +86,7 @@ class LoanApplication
      */
     private function createNewCustomer(): Customer
     {
-        $customer = (new Customer())->collectCustomerDetails($this->customer_master_list_data);
-
-        return $customer;
+        return (new Customer())->collectCustomerDetails($this->customer_master_list_data);
     }
 
     // Loan selection

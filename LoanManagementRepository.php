@@ -58,7 +58,7 @@ class LoanManagementRepository
      * @param string $_customer_name
      * @param string $_customer_dob
      * @param string $_customer_address
-     * @param string $_customer_phone_number
+     * @param int $_customer_phone_number
      * @return int  The auto-increment ID of the new row.
      */
     public static function insertCustomer(
@@ -66,7 +66,7 @@ class LoanManagementRepository
         string $_customer_name,
         string $_customer_dob,
         string $_customer_address,
-        string $_customer_phone_number
+        int $_customer_phone_number
     ): int {
 
         $query = "INSERT INTO

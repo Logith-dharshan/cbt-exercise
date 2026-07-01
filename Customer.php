@@ -32,7 +32,7 @@ class Customer //implements JsonSerializable
      */
     private function getInput(string $_prompt): string
     {
-        return trim(readline($_prompt));
+        return trim(fgets($_prompt));
     }
 
     /**
@@ -382,7 +382,7 @@ class Customer //implements JsonSerializable
      * Summary of loadAll
      * @return array
      */
-    public function loadAll(): array
+    public static function loadAll(): array
     {
         $rows = LoanManagementRepository::getAllCustomers();
         $customers = [];

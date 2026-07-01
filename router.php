@@ -72,7 +72,7 @@ switch ($method) {
             $customer = LoanManagementRepository::getCustomerByAccountNumber($account_number);
 
             if ($customer === null){
-                sendResponse(404, "No customer found with this customer or they have no loans");
+                sendResponse(404, "No customer found with this account number or they have no loans");
             }
 
             sendResponse(200,"Customer loans received successfully.", $customer);
