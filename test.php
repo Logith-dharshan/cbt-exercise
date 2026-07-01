@@ -13,7 +13,7 @@ header('Content-Type: application/json');
  * @param mixed  $_data    Payload, or null if there's nothing to return.
  *
  * @return void
- */
+ */                                                                                                         
 function sendResponse(int $_status, string $_message, mixed $_data = null): void
 {
     http_response_code($_status);
@@ -31,8 +31,8 @@ function sendResponse(int $_status, string $_message, mixed $_data = null): void
  * Validates that every required key is present and non-empty in $_data.
  * Sends a 400 JSON error and stops execution if any field is missing.
  *
- * @param array    $_data             Decoded request body to check.
- * @param string[] $_required_keys    Keys that must be present and non-empty.
+ * @param array    $_data Decoded request body to check.
+ * @param string[] $_required_keys Keys that must be present and non-empty.
  *
  * @return void
  */
@@ -67,18 +67,21 @@ $body = json_decode(file_get_contents('php://input'), true) ?? [];
 switch ($method) {
 
     case 'GET':
-        if ($account_number !== null) {
-            $rows = LoanManagementRepository::getCustomerByAccountNumber($account_number);
 
-            if (empty($rows)) {
-                sendResponse(404, 'No customer found with this account number');
+        if ($account_number !== null){
+            $customer = LoanManagementRepository::getCustomerByAccountNumber($account_number);
+
+            if ($customer === null){
+                sendResponse(404, "No customer found with this customer or they have no loans");
             }
 
-            sendResponse(200, 'Customer retrieved successfully', $rows);
+            sendResponse(200,"Customer loans received successfully.", $customer);
+            
         }
 
         $rows = LoanManagementRepository::getAllCustomers();
-        sendResponse(200, 'Customers retrieved successfully', $rows);
+        sendResponse(200, 'Customers with loans retrieved successfully', $rows);
+
         break;
 
     case 'POST':
@@ -127,7 +130,8 @@ switch ($method) {
             sendResponse(404, 'No customer found with this account number, or no changes made');
         }
 
-        sendResponse(200, 'Customer updated successfully');
+        $customer = LoanManagementRepository::getCustomerByAccountNumber($account_number);
+        sendResponse(200, 'Customer updated successfully', $customer);
         break;
 
     case 'DELETE':

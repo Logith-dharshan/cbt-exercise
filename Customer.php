@@ -59,7 +59,7 @@ class Customer //implements JsonSerializable
         $this->collectField('Enter your name: ', fn($v) => $this->setName($v));
         $this->collectField('Enter your Date of Birth (YYYY-MM-DD): ', fn($v) => $this->setDob($v));
         $this->collectField('Enter your Address: ', fn($v) => $this->setAddress($v));
-        $this->collectField('Enter your Phone Number: ', fn($v) => $this->setPhone($v));
+        $this->collectField('Enter your Phone Number: ', fn($v) => $this->setPhone((int)$v));
 
         return $this;
     }

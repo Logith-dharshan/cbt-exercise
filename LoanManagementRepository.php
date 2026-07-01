@@ -22,64 +22,29 @@ class LoanManagementRepository
      */
     public static function getAllCustomers(): array
     {
+        
+        $query = "SELECT
+                    customers.id AS customer_id,
+                    customers.account_number,
+                    customers.customer_name,
+                    customers.customer_dob,
+                    customers.customer_address,
+                    customers.customer_phone_number,
+                    loans.loan_type,
+                    loans.loan_amount,
+                    loans.loan_tenure,
+                    loans.monthly_emi,
+                    loans.total_interest,
+                    loans.total_repayment
+                  FROM 
+                    customers
+                  LEFT JOIN 
+                    loans ON customers.id = loans.customer_id
+                  ORDER BY 
+                    customers.id";
 
-        $stmt = self::executeQuery(
-            "
-            SELECT
-                customers.id AS customer_id,
-                customers.account_number,
-                customers.customer_name,
-                customers.customer_dob,
-                customers.customer_address,
-                customers.customer_phone_number,
-                loans.loan_type,
-                loans.loan_amount,
-                loans.loan_tenure,
-                loans.monthly_emi,
-                loans.total_interest,
-                loans.total_repayment
-            FROM customers
-            LEFT JOIN loans ON customers.id = loans.customer_id
-            ORDER BY customers.id
-        ");
+        $stmt = self::executeQuery($query);
 
-        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
-
-        return $rows;
-    }
-
-    /**
-     * Fetches a single customer (joined with their loans) by account number.
-     *
-     * @param string $_account_number
-     * @return array  Matching rows (empty if no customer found).
-     */
-    public static function getCustomerByAccountNumber(string $_account_number): array
-    {
-
-        $stmt = self::executeQuery(
-            "
-            SELECT
-                customers.id AS customer_id,
-                customers.account_number,
-                customers.customer_name,
-                customers.customer_dob,
-                customers.customer_address,
-                customers.customer_phone_number,
-                loans.loan_type,
-                loans.loan_amount,
-                loans.loan_tenure,
-                loans.monthly_emi,
-                loans.total_interest,
-                loans.total_repayment
-            FROM customers
-            LEFT JOIN loans ON customers.id = loans.customer_id
-            WHERE customers.account_number = ?
-            ORDER BY customers.id
-        ",
-        "s", 
-        [$_account_number]);
         $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
@@ -104,20 +69,15 @@ class LoanManagementRepository
         string $_customer_phone_number
     ): int {
 
-        $stmt = self::executeQuery(
-            "
-            INSERT INTO customers
-                (account_number, customer_name, customer_dob, customer_address, customer_phone_number)
-            VALUES (?, ?, ?, ?, ?)
-            ",
-            "sssss",
-            [
-                $_account_number,
-                $_customer_name, 
-                $_customer_dob, 
-                $_customer_address,
-                $_customer_phone_number
-            ]);
+        $query = "INSERT INTO
+                    customers(account_number,
+                    customer_name, 
+                    customer_dob, 
+                    customer_address, 
+                    customer_phone_number)
+                  VALUES (?, ?, ?, ?, ?)";
+
+        $stmt = self::executeQuery($query, "sssss",[$_account_number, $_customer_name, $_customer_dob, $_customer_address, $_customer_phone_number]);
 
         $inserted_id = self::getConnection()->insert_id;
         $stmt->close();
@@ -147,22 +107,18 @@ class LoanManagementRepository
         float  $_total_repayment
     ): int {
 
-        $stmt = self::executeQuery(
-            "
-            INSERT INTO loans
-                (customer_id, loan_type, loan_amount, loan_tenure, monthly_emi, total_interest, total_repayment)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ",
-        "isdiddd",
-        [
-            $_customer_id,
-            $_loan_type,
-            $_loan_amount,
-            $_loan_tenure,
-            $_monthly_emi,
-            $_total_interest,
-            $_total_repayment
-        ]);
+        $query = "INSERT INTO 
+                    loans(customer_id,
+                    loan_type,
+                    loan_amount,
+                    loan_tenure,
+                    monthly_emi,
+                    total_interest,
+                    total_repayment)
+                  VALUES 
+                    (?, ?, ?, ?, ?, ?, ?)";
+
+        $stmt = self::executeQuery($query, "isdiddd", [$_customer_id, $_loan_type, $_loan_amount, $_loan_tenure, $_monthly_emi, $_total_interest, $_total_repayment]);
 
         $inserted_id = self::getConnection()->insert_id;
         $stmt->close();
@@ -189,20 +145,17 @@ class LoanManagementRepository
         string $_customer_phone_number
     ): int {
 
-        $stmt = self::executeQuery(
-            "
-            UPDATE customers
-            SET customer_name = ?, customer_dob = ?, customer_address = ?, customer_phone_number = ?
-            WHERE account_number = ?
-        ",
-        "sssss",
-        [
-            $_customer_name,
-            $_customer_dob,
-            $_customer_address,
-            $_customer_phone_number,
-            $_account_number
-        ]);
+        $query = "UPDATE
+                    customers
+                  SET
+                    customer_name = ?,
+                    customer_dob = ?, 
+                    customer_address = ?,
+                    customer_phone_number = ?
+                  WHERE
+                    account_number = ? ";
+
+        $stmt = self::executeQuery($query, "sssss",[$_customer_name, $_customer_dob, $_customer_address, $_customer_phone_number, $_account_number]);
 
         $affected = $stmt->affected_rows;
         $stmt->close();
@@ -219,17 +172,77 @@ class LoanManagementRepository
     public static function deleteCustomer(string $_account_number): int
     {
 
-        $stmt = self::executeQuery(
-            "
-            DELETE FROM customers
-            WHERE account_number = ?
-        ",
-        "s",
-        [$_account_number]);
+        $query = "DELETE FROM 
+                    customers
+                  WHERE
+                    account_number = ?";
+
+        $stmt = self::executeQuery($query, "s", [$_account_number]);
 
         $affected = $stmt->affected_rows;
         $stmt->close();
 
         return $affected;
+    }
+
+    public static function getCustomerByAccountNumber(string $_account_number): ?array
+    {
+        $query = "SELECT 
+                    customers.id AS customer_id,
+                    customers.account_number,
+                    customers.customer_name,
+                    customers.customer_dob,
+                    customers.customer_address,
+                    customers.customer_phone_number,
+                    loans.id AS loan_id,
+                    loans.loan_type,
+                    loans.loan_amount,
+                    loans.loan_tenure,
+                    loans.monthly_emi,
+                    loans.total_interest,
+                    loans.total_repayment
+                  FROM 
+                    customers
+                  INNER JOIN 
+                    loans ON loans.customer_id = customers.id
+                  WHERE 
+                    customers.account_number = ?
+                  ORDER BY 
+                    loans.id";
+
+        $stmt = self::executeQuery($query, "s", [$_account_number]);
+
+        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        if (empty($rows)) {
+            return null;
+        }
+
+        // First row always has the customer details
+        $customer = [
+            'customer_id'           => (int) $rows[0]['customer_id'],
+            'account_number'        => $rows[0]['account_number'],
+            'customer_name'         => $rows[0]['customer_name'],
+            'customer_dob'          => $rows[0]['customer_dob'],
+            'customer_address'      => $rows[0]['customer_address'],
+            'customer_phone_number' => $rows[0]['customer_phone_number'],
+            'loans'                 => [],
+        ];
+
+        // Each row is one loan — collect them all under 'loans'
+        foreach ($rows as $row) {
+            $customer['loans'][] = [
+                'loan_id'         => $row['loan_id'],
+                'loan_type'       => $row['loan_type'],
+                'loan_amount'     => (float) $row['loan_amount'],
+                'loan_tenure'     => $row['loan_tenure'],
+                'monthly_emi'     => (float) $row['monthly_emi'],
+                'total_interest'  => (float) $row['total_interest'],
+                'total_repayment' => (float) $row['total_repayment'],
+            ];
+        }
+
+        return $customer;
     }
 }
