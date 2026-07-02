@@ -1,9 +1,9 @@
 <?php
 
-require_once 'RetryLimit.php';
-require_once 'Loan.php';
-require_once 'Database.php';
-require_once 'LoanManagementRepository.php';
+require_once __DIR__ . '/../Utils/RetryLimit.php';
+require_once __DIR__ . '/Loan.php';
+require_once __DIR__ . '/../Config/Database.php';
+require_once __DIR__ . '/../Repositories/CustomerManagementRepository.php';
 
 class Customer //implements JsonSerializable
 {
@@ -15,14 +15,14 @@ class Customer //implements JsonSerializable
     const MIN_LOAN_AMOUNT = 10000;
     const MIN_MONTHS = 6;
     const MAX_MONTHS = 60;
-//    const FILE_NAME = 'customers.json';
+    //    const FILE_NAME = 'customers.json';
 
     private int $customer_id;
     private string $account_number;
     private string $customer_name;
     private string $customer_dob;
     private string $customer_address;
-    private int $customer_phone_number;
+    private string $customer_phone_number;
     private array $customer_loans = [];
 
     /**
@@ -59,7 +59,7 @@ class Customer //implements JsonSerializable
         $this->collectField('Enter your name: ', fn($v) => $this->setName($v));
         $this->collectField('Enter your Date of Birth (YYYY-MM-DD): ', fn($v) => $this->setDob($v));
         $this->collectField('Enter your Address: ', fn($v) => $this->setAddress($v));
-        $this->collectField('Enter your Phone Number: ', fn($v) => $this->setPhone((int)$v));
+        $this->collectField('Enter your Phone Number: ', fn($v) => $this->setPhone($v));
 
         return $this;
     }
@@ -167,7 +167,7 @@ class Customer //implements JsonSerializable
         return true;
     }
 
-    public function setPhone(int $_phone): bool
+    public function setPhone(string $_phone): bool
     {
         if (!preg_match("/^\d{10}$/", $_phone)) {
             echo "Error: Phone number must be a 10-digit number.\n";
@@ -175,7 +175,7 @@ class Customer //implements JsonSerializable
             return false;
         }
 
-        $this->customer_phone_number = (int) $_phone;
+        $this->customer_phone_number = $_phone;
 
         return true;
     }
@@ -242,7 +242,7 @@ class Customer //implements JsonSerializable
         return $this->customer_address;
     }
 
-    public function getPhoneNumber(): int
+    public function getPhoneNumber(): string
     {
         return $this->customer_phone_number;
     }
@@ -350,9 +350,10 @@ class Customer //implements JsonSerializable
      * @return void
      */
 
-    public function insertCustomer(): void{
+    public function insertCustomer(): void
+    {
 
-        $this->customer_id = LoanManagementRepository::insertCustomer(
+        $this->customer_id = CustomerManagementRepository::insertCustomer(
             $this->account_number,
             $this->customer_name,
             $this->customer_dob,
@@ -365,9 +366,10 @@ class Customer //implements JsonSerializable
      * @param Loan $_loan
      * @return void
      */
-    public function insertLoan(Loan $_loan): void{
+    public function insertLoan(Loan $_loan): void
+    {
 
-        LoanManagementRepository::insertLoan(
+        CustomerManagementRepository::insertLoan(
             $this->customer_id,
             $_loan->getLoanType(),
             $_loan->getLoanAmount(),
@@ -379,39 +381,40 @@ class Customer //implements JsonSerializable
     }
 
     /**
-     * Summary of loadAll
-     * @return array
+     * Loads every customer that has at least one loan (customers with zero
+     * loans are excluded by CustomerManagementRepository::getAllCustomers()'s
+     * INNER JOIN), keyed by account number.
+     *
+     * @return array<string, Customer>
      */
     public static function loadAll(): array
     {
-        $rows = LoanManagementRepository::getAllCustomers();
+        $customer_rows = CustomerManagementRepository::getAllCustomers();
         $customers = [];
 
-        foreach ($rows as $row) {
-            $account_number = $row['account_number'];
-            if(!isset($customers[$account_number])) {
-                $customer = new Customer();
-                $customer->setCustomerId((int)$row['customer_id']);
-                $customer->setAccountNumber($row['account_number'], []);
-                $customer->setName($row['customer_name']);
-                $customer->setDob($row['customer_dob']);
-                $customer->setAddress($row['customer_address']);
-                $customer->setPhone((int)$row['customer_phone_number']);
-                $customers[$account_number] = $customer;
-            }
+        foreach ($customer_rows as $row) {
+            $customer = new Customer();
+            $customer->setCustomerId((int) $row['customer_id']);
+            $customer->setAccountNumber($row['account_number'], []);
+            $customer->setName($row['customer_name']);
+            $customer->setDob($row['customer_dob']);
+            $customer->setAddress($row['customer_address']);
+            $customer->setPhone((string) $row['customer_phone_number']);
 
-            if($row['loan_type'] !== NULL) {
-
-                $customers[$account_number]->addLoan(new Loan(
-                    $row['loan_type'],
-                    (float)$row['loan_amount'],
-                    (int)$row['loan_tenure'],
-                    (float)$row['monthly_emi'],
-                    (float)$row['total_interest'],
-                    (float)$row['total_repayment']
+            foreach ($row['loans'] as $loan_row) {
+                $customer->addLoan(new Loan(
+                    $loan_row['loan_type'],
+                    (float) $loan_row['loan_amount'],
+                    (int) $loan_row['loan_tenure'],
+                    (float) $loan_row['monthly_emi'],
+                    (float) $loan_row['total_interest'],
+                    (float) $loan_row['total_repayment']
                 ));
             }
+
+            $customers[$row['account_number']] = $customer;
         }
+
         return $customers;
     }
 }

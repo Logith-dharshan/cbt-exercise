@@ -1,9 +1,9 @@
 <?php
 
-require_once 'LoanType.php';
-require_once 'Customer.php';
-require_once 'RetryLimit.php';
-require_once 'Loan.php';
+require_once __DIR__ . '/Models/LoanType.php';
+require_once __DIR__ . '/Models/Customer.php';
+require_once __DIR__ . '/Utils/RetryLimit.php';
+require_once __DIR__ . '/Models/Loan.php';
 
 class LoanApplication
 {
@@ -18,7 +18,7 @@ class LoanApplication
 
         foreach ($customer_loader->loadAll() as $customer) {
             $this->customer_master_list_data[$customer->getAccountNumber()] = $customer;
-        }
+        }  
     }
 
     // Customer flow
@@ -291,5 +291,3 @@ class LoanApplication
         return $formatter->formatCurrency($_amount, 'INR');
     }
 }
-
-(new LoanApplication())->run();

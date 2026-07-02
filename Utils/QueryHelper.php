@@ -1,6 +1,6 @@
 <?php
 
-require_once 'Database.php';
+require_once __DIR__ . '/../Config/Database.php';
 
 trait QueryHelper
 {
@@ -37,7 +37,13 @@ trait QueryHelper
             );
         }
 
-        $statement->execute();
+        try 
+        {
+            $statement->execute();
+        } catch (mysqli_sql_exception $e) 
+        {
+            throw new RuntimeException ("Database operation failed: " . $e->getMessage(), 0, $e);
+        }
 
         return $statement;
     }
