@@ -47,7 +47,6 @@ class Router
 	{
 
 		$pattern_parts = array_values(array_filter(explode('/', $_pattern), 'strlen'));
-
 		$path_parts = array_values(array_filter(explode('/', $_path), 'strlen'));
 
 		if (count($pattern_parts) !== count($path_parts)) {

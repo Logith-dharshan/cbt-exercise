@@ -22,26 +22,25 @@ class CustomerManagementRepository
 	 */
 	public static function getAllCustomers(): array
 	{
-
 		$query = "SELECT
-										customers.id AS customer_id,
-										customers.account_number,
-										customers.customer_name,
-										customers.customer_dob,
-										customers.customer_address,
-										customers.customer_phone_number,
-										loans.loan_type,
-										loans.loan_amount,
-										loans.loan_tenure,
-										loans.monthly_emi,
-										loans.total_interest,
-										loans.total_repayment
-									FROM
-										customers
-									INNER JOIN
-										loans ON customers.id = loans.customer_id
-									ORDER BY
-										customers.id, loans.id";
+					customers.id AS customer_id,
+					customers.account_number,
+					customers.customer_name,
+					customers.customer_dob,
+					customers.customer_address,
+					customers.customer_phone_number,
+					loans.loan_type,
+					loans.loan_amount,
+					loans.loan_tenure,
+					loans.monthly_emi,
+					loans.total_interest,
+					loans.total_repayment
+				  FROM
+					customers
+				  INNER JOIN
+					loans ON customers.id = loans.customer_id
+				  ORDER BY
+					customers.id, loans.id";
 
 		$stmt = self::executeQuery($query);
 
@@ -96,12 +95,12 @@ class CustomerManagementRepository
 	): int {
 
 		$query = "INSERT INTO
-										customers(account_number,
-										customer_name,
-										customer_dob,
-										customer_address,
-										customer_phone_number)
-									VALUES (?, ?, ?, ?, ?)";
+					customers(account_number,
+					customer_name,
+					customer_dob,
+					customer_address,
+					customer_phone_number)
+				  VALUES (?, ?, ?, ?, ?)";
 
 		$stmt = self::executeQuery($query, "sssss", [$_account_number, $_customer_name, $_customer_dob, $_customer_address, $_customer_phone_number]);
 
@@ -134,15 +133,15 @@ class CustomerManagementRepository
 	): int {
 
 		$query = "INSERT INTO
-										loans(customer_id,
-										loan_type,
-										loan_amount,
-										loan_tenure,
-										monthly_emi,
-										total_interest,
-										total_repayment)
-									VALUES
-										(?, ?, ?, ?, ?, ?, ?)";
+					loans(customer_id,
+					loan_type,
+					loan_amount,
+					loan_tenure,
+					monthly_emi,
+					total_interest,
+					total_repayment)
+				VALUES
+					(?, ?, ?, ?, ?, ?, ?)";
 
 		$stmt = self::executeQuery($query, "isdiddd", [$_customer_id, $_loan_type, $_loan_amount, $_loan_tenure, $_monthly_emi, $_total_interest, $_total_repayment]);
 
@@ -172,14 +171,14 @@ class CustomerManagementRepository
 	): int {
 
 		$query = "UPDATE
-										customers
-									SET
-										customer_name = ?,
-										customer_dob = ?,
-										customer_address = ?,
-										customer_phone_number = ?
-									WHERE
-										account_number = ? ";
+					customers
+				  SET
+					customer_name = ?,
+					customer_dob = ?,
+					customer_address = ?,
+					customer_phone_number = ?
+				  WHERE
+					account_number = ? ";
 
 		$stmt = self::executeQuery($query, "sssss", [$_customer_name, $_customer_dob, $_customer_address, $_customer_phone_number, $_account_number]);
 
@@ -210,27 +209,27 @@ class CustomerManagementRepository
 	public static function getCustomerByAccountNumber(string $_account_number): ?array
 	{
 		$query = "SELECT
-										customers.id AS customer_id,
-										customers.account_number,
-										customers.customer_name,
-										customers.customer_dob,
-										customers.customer_address,
-										customers.customer_phone_number,
-										loans.id AS loan_id,
-										loans.loan_type,
-										loans.loan_amount,
-										loans.loan_tenure,
-										loans.monthly_emi,
-										loans.total_interest,
-										loans.total_repayment
-									FROM
-										customers
-									INNER JOIN
-										loans ON loans.customer_id = customers.id
-									WHERE
-										customers.account_number = ?
-									ORDER BY
-										loans.id";
+					customers.id AS customer_id,
+					customers.account_number,
+					customers.customer_name,
+					customers.customer_dob,
+					customers.customer_address,
+					customers.customer_phone_number,
+					loans.id AS loan_id,
+					loans.loan_type,
+					loans.loan_amount,
+					loans.loan_tenure,
+					loans.monthly_emi,
+					loans.total_interest,
+					loans.total_repayment
+				  FROM
+				  	customers
+				  INNER JOIN
+				  	loans ON loans.customer_id = customers.id
+				  WHERE
+					customers.account_number = ?
+				  ORDER BY
+					loans.id";
 
 		$stmt = self::executeQuery($query, "s", [$_account_number]);
 
