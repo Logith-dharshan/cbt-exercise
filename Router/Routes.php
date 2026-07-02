@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/Router.php';
-require_once __DIR__ . '/../controllers/CustomerController.php';
+require_once __DIR__ . '/../Controllers/CustomerController.php';
 
 $router = new Router();
 
