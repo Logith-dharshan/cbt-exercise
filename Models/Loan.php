@@ -147,4 +147,21 @@ class Loan // implements JsonSerializable
 			$_data['total_repayment']
 		);
 	}
+
+	public static function calculateEmi(LoanType $_loan_type, float $_principal, int $_months): array
+	{
+		$monthly_rate = $_loan_type->rate() / 12;
+
+		$monthly_payment = $_principal * $monthly_rate * pow(1 + $monthly_rate, $_months)
+			/ (pow(1 + $monthly_rate, $_months) - 1);
+
+		$total_repayment = $monthly_payment * $_months;
+		$total_interest = $total_repayment - $_principal;
+
+		return [
+			'monthly_payment' => round($monthly_payment, 2),
+			'total_repayment' => round($total_repayment, 2),
+			'total_interest' => round($total_interest, 2),
+		];
+	}
 }

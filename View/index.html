@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Ledger — Loan Module</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <small>Loan Module &middot; Register</small>
+  <h1>Customer Ledger</h1>
+</header>
+
+<main class="app-layout">
+
+  <!-- ============ LEFT: FORM PANEL ============ -->
+  <section id="input-section" class="panel-left">
+    <div class="mode-banner" id="modeBanner">
+      <span class="mode-label" id="modeLabel">New Customer</span>
+      <button type="button" class="btn-ghost btn-sm" id="cancelModeBtn" style="display:none;">Cancel</button>
+    </div>
+
+    <div class="form-panel">
+      <form id="customerForm" novalidate>
+
+        <div class="form-subheading">Customer Details</div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="f_account_number">Account Number</label>
+            <input id="f_account_number" name="account_number" inputmode="numeric" maxlength="16" placeholder="10–16 digits">
+            <div class="err" id="err_account_number"></div>
+          </div>
+
+          <div class="field">
+            <label for="f_customer_name">Full Name</label>
+            <input id="f_customer_name" name="customer_name" placeholder="Letters and spaces only">
+            <div class="err" id="err_customer_name"></div>
+          </div>
+
+          <div class="field">
+            <label for="f_customer_dob">Date of Birth</label>
+            <input id="f_customer_dob" name="customer_dob" type="date">
+            <div class="err" id="err_customer_dob"></div>
+          </div>
+
+          <div class="field">
+            <label for="f_customer_phone_number">Phone Number</label>
+            <input id="f_customer_phone_number" name="customer_phone_number" inputmode="numeric" maxlength="10" placeholder="10 digits">
+            <div class="err" id="err_customer_phone_number"></div>
+          </div>
+
+          <div class="field">
+            <label for="f_customer_address">Address</label>
+            <input id="f_customer_address" name="customer_address" placeholder="Min. 10 characters">
+            <div class="err" id="err_customer_address"></div>
+          </div>
+        </div>
+
+        <div class="form-subheading" id="loanSectionHeading">Loan Details (required to create a customer)</div>
+
+        <div class="form-grid" id="loanFieldset">
+          <div class="field">
+            <label for="f_loan_type">Loan Type</label>
+            <select id="f_loan_type" name="loan_type">
+              <option value="">Select loan type</option>
+              <option value="Personal Loan">Personal Loan</option>
+              <option value="Home Loan">Home Loan</option>
+              <option value="Car Loan">Car Loan</option>
+              <option value="Education Loan">Education Loan</option>
+            </select>
+            <div class="err" id="err_loan_type"></div>
+          </div>
+
+          <div class="field">
+            <label for="f_loan_amount">Loan Amount</label>
+            <input id="f_loan_amount" name="loan_amount" type="number" min="1" step="0.01" placeholder="e.g. 500000">
+            <div class="err" id="err_loan_amount"></div>
+          </div>
+
+          <div class="field">
+            <label for="f_loan_tenure">Loan Tenure (Months)</label>
+            <input id="f_loan_tenure" name="loan_tenure" type="number" min="1" max="480" step="1" placeholder="e.g. 60">
+            <div class="err" id="err_loan_tenure"></div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="submitBtn">Save Customer</button>
+          <button type="button" class="btn-ghost" id="resetBtn">Clear Form</button>
+        </div>
+
+        <div class="form-msg" id="formMsg"></div>
+      </form>
+    </div>
+  </section>
+
+  <section id="table-section" class="panel-bottom">
+    <h2>Customers &amp; Loans</h2>
+
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="Search by account number…" autocomplete="off">
+      <button type="button" class="btn-ghost btn-sm" id="refreshBtn">Refresh</button>
+    </div>
+
+    <div class="count-pill">Accounts on record: <strong id="customerCount">—</strong></div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Cust. ID</th>
+            <th>Account No.</th>
+            <th>Name</th>
+            <th>DOB</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Loans</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr class="empty-row"><td colspan="8">Loading customers…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

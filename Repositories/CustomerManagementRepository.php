@@ -29,6 +29,7 @@ class CustomerManagementRepository
 					customers.customer_dob,
 					customers.customer_address,
 					customers.customer_phone_number,
+					loans.id AS loan_id,
 					loans.loan_type,
 					loans.loan_amount,
 					loans.loan_tenure,
@@ -37,7 +38,7 @@ class CustomerManagementRepository
 					loans.total_repayment
 				  FROM
 					customers
-				  INNER JOIN
+				  LEFT JOIN
 					loans ON customers.id = loans.customer_id
 				  ORDER BY
 					customers.id, loans.id";
@@ -63,14 +64,17 @@ class CustomerManagementRepository
 				];
 			}
 
-			$customers[$customer_id]['loans'][] = [
-				'loan_type'          => $row['loan_type'],
-				'loan_amount'        => $row['loan_amount'],
-				'loan_tenure'        => $row['loan_tenure'],
-				'monthly_emi'        => $row['monthly_emi'],
-				'total_interest'     => $row['total_interest'],
-				'total_repayment'    => $row['total_repayment']
-			];
+			if ($row['loan_type'] !== null) {
+				$customers[$customer_id]['loans'][] = [
+					'loan_id'            => (int) $row['loan_id'],
+					'loan_type'          => $row['loan_type'],
+					'loan_amount'        => $row['loan_amount'],
+					'loan_tenure'        => $row['loan_tenure'],
+					'monthly_emi'        => $row['monthly_emi'],
+					'total_interest'     => $row['total_interest'],
+					'total_repayment'    => $row['total_repayment']
+				];
+			}
 		}
 
 		return array_values($customers);
@@ -224,7 +228,7 @@ class CustomerManagementRepository
 					loans.total_repayment
 				  FROM
 				  	customers
-				  INNER JOIN
+				  LEFT JOIN
 				  	loans ON loans.customer_id = customers.id
 				  WHERE
 					customers.account_number = ?
@@ -251,10 +255,14 @@ class CustomerManagementRepository
 			'loans'                 => [],
 		];
 
-		// Each row is one loan — collect them all under 'loans'
+		// Each row is one loan — collect them all under 'loans' (skip if customer has none)
 		foreach ($rows as $row) {
+			if ($row['loan_id'] === null) {
+				continue;
+			}
+
 			$customer['loans'][] = [
-				'loan_id'         => $row['loan_id'],
+				'loan_id'         => (int) $row['loan_id'],
 				'loan_type'       => $row['loan_type'],
 				'loan_amount'     => (float) $row['loan_amount'],
 				'loan_tenure'     => $row['loan_tenure'],
@@ -265,5 +273,101 @@ class CustomerManagementRepository
 		}
 
 		return $customer;
+	}
+
+	/**
+	 * Returns true if a customer with this account_number already exists.
+	 */
+	public static function accountNumberExists(string $_account_number): bool
+	{
+		$query = "SELECT id FROM customers WHERE account_number = ? LIMIT 1";
+
+		$stmt = self::executeQuery($query, "s", [$_account_number]);
+		$row  = $stmt->get_result()->fetch_assoc();
+		$stmt->close();
+
+		return $row !== null;
+	}
+
+	/**
+	 * Returns the internal numeric id for a customer, or null if not found.
+	 */
+	public static function getCustomerIdByAccountNumber(string $_account_number): ?int
+	{
+		$query = "SELECT id FROM customers WHERE account_number = ? LIMIT 1";
+
+		$stmt = self::executeQuery($query, "s", [$_account_number]);
+		$row  = $stmt->get_result()->fetch_assoc();
+		$stmt->close();
+
+		return $row !== null ? (int) $row['id'] : null;
+	}
+
+	/**
+	 * Returns true if this customer already holds a loan of the given type.
+	 */
+	public static function customerHasLoanType(string $_account_number, string $_loan_type): bool
+	{
+		$query = "SELECT loans.id
+				   FROM loans
+				   INNER JOIN customers ON customers.id = loans.customer_id
+				   WHERE customers.account_number = ? AND loans.loan_type = ?
+				   LIMIT 1";
+
+		$stmt = self::executeQuery($query, "ss", [$_account_number, $_loan_type]);
+		$row  = $stmt->get_result()->fetch_assoc();
+		$stmt->close();
+
+		return $row !== null;
+	}
+
+	/**
+	 * Returns true if this customer has at least one loan on record.
+	 */
+	public static function customerHasLoans(string $_account_number): bool
+	{
+		$query = "SELECT loans.id
+				   FROM loans
+				   INNER JOIN customers ON customers.id = loans.customer_id
+				   WHERE customers.account_number = ?
+				   LIMIT 1";
+
+		$stmt = self::executeQuery($query, "s", [$_account_number]);
+		$row  = $stmt->get_result()->fetch_assoc();
+		$stmt->close();
+
+		return $row !== null;
+	}
+
+	/**
+	 * Deletes specific loans belonging to a given customer.
+	 * Scoped to the customer's account_number so a loan_id can't be used
+	 * to delete another customer's loan.
+	 *
+	 * @param string $_account_number
+	 * @param int[]  $_loan_ids
+	 * @return int  Number of loans deleted.
+	 */
+	public static function deleteLoans(string $_account_number, array $_loan_ids): int
+	{
+		if (empty($_loan_ids)) {
+			return 0;
+		}
+
+		$placeholders = implode(',', array_fill(0, count($_loan_ids), '?'));
+
+		$query = "DELETE loans FROM loans
+				   INNER JOIN customers ON customers.id = loans.customer_id
+				   WHERE customers.account_number = ?
+				   AND loans.id IN ($placeholders)";
+
+		$types  = 's' . str_repeat('i', count($_loan_ids));
+		$params = array_merge([$_account_number], array_map('intval', $_loan_ids));
+
+		$stmt = self::executeQuery($query, $types, $params);
+		$affected = $stmt->affected_rows;
+		$stmt->close();
+
+		return $affected;
 	}
 }
